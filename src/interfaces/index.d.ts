@@ -19,3 +19,19 @@ export interface BasicEntity {
     created?: Date;
     status?: STATUS;
 }
+
+export type booleanCallback = (value?: boolean) => void;
+
+export interface BasicComponent {
+    getId(): string;
+    setVisible(visible: boolean, callback?: booleanCallback);
+    getVisible(): boolean;
+}
+
+export interface HasNavigateBackProvider {
+    navigateBack(currentCompId: string): void;
+}
+
+export interface StringMap<T> {
+    [key: string]: T;
+}

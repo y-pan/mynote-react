@@ -2,32 +2,41 @@ import React from 'react';
 import ReactTable from "react-table";
 import "react-table/react-table.css";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faBusinessTime, faCheckCircle, faTrash, faWalking} from '@fortawesome/free-solid-svg-icons'
-import {deleteItem, deleteNote, getNotes} from "../api/api";
-import {Note} from "../interfaces";
-import {FieldDecorator} from "./FieldDecorator";
+import {faTrash, faLink} from '@fortawesome/free-solid-svg-icons'
+import {deleteNote, getNote, getNotes} from "../api/api";
+import {BasicComponent, booleanCallback, Note} from "../interfaces";
 
 interface NoteListProps {
-
+    id: string;
+    openNote(note: Note, noteOpenedCallback: booleanCallback): void;
+    visible: boolean;
 }
 
 interface NoteListState {
     notes: Note[];
-
+    visible?: boolean;
 }
 
-export class NoteList extends React.Component<NoteListProps, NoteListState> {
+export class NoteList extends React.Component<NoteListProps, NoteListState> implements BasicComponent {
 
     constructor(props: NoteListProps) {
         super(props);
         this.state = {
-            notes: []
+            notes: [],
+            visible: this.props.visible
         };
 
         this.loadData = this.loadData.bind(this);
         this.onDelete = this.onDelete.bind(this);
+        this.onOpenNoteDetails = this.onOpenNoteDetails.bind(this);
+        this.setVisible = this.setVisible.bind(this);
     }
 
+    setVisible(visible: boolean, callback: booleanCallback): void {
+        this.setState({visible: visible}, () => {
+            callback && callback(this.state.visible);
+        });
+    }
     componentWillMount(): void {
         this.loadData();
     }
@@ -41,7 +50,7 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> {
             return this.loadData();
         } else {
             let notes: Note[] = [...this.state.notes];
-            notes.push(newNote)
+            notes.push(newNote);
             this.setState({notes: notes});
         }
     }
@@ -84,7 +93,6 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> {
     }
 
     private loadData(): void {
-        console.log("loaddata")
         getNotes()
             .then((notes: Note[]) => {
                 this.setState({notes: notes})
@@ -92,15 +100,33 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> {
             .catch((err: any) => console.info(err));
     }
 
-    render() {
+    private onOpenNoteDetails(noteId: number): void {
+        getNote(noteId).then((note: Note) => {
+            this.props.openNote(note, (otherVisible: boolean | undefined) => {
+                this.setState({visible: !otherVisible});
+            })
+        })
+    }
 
+    render() {
         let table: JSX.Element = <ReactTable
             data={this.state.notes}
             columns={[
                 {
                     Header: "Name",
                     id: "name",
-                    accessor: d => d.name
+                    accessor: d => d.name,
+                    Cell: row => (
+                        <div>
+                            <span
+                                style={{color: "red", cursor: "pointer", padding: 5}}
+                                onClick={() => this.onOpenNoteDetails(row.original.id)}
+                            >
+                                {row.original.name}
+                                <FontAwesomeIcon icon={faLink} />
+                            </span>
+                        </div>
+                    )
                 },
                 {
                     Header: "Description",
@@ -127,32 +153,35 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> {
                     )
                 }
             ]}
-            defaultPageSize={10}
+            defaultPageSize={5}
             className="-striped -highlight"
         />;
 
         return (
-            <div>
-                <div id={"note-list"}>
-                    {table}
-                </div>
+            <div id={"note-list"} style={{display: this.state.visible? "block" : "none"}}>
+                {table}
             </div>
         );
     }
 
     private onDelete(note: Note): void {
-        console.log(note)
         if (!note || !note.id) {
             alert("Invalid data");
             return;
         }
         if (confirm("Delete note: " + note.name + " ?")) {
             deleteNote(note.id as number).then(() => {
-                this.refreshByDelete(note.id);
-                // this.loadData();
+                this.refreshByDelete(note.id, false);
             });
         }
     }
 
+    getId(): string {
+        return this.props.id;
+    }
+
+    getVisible(): boolean {
+        return this.state.visible || false;
+    }
 
 }
