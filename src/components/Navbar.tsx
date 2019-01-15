@@ -64,5 +64,11 @@ export class Navbar extends React.Component<NavbarProps, NavbarState> {
             nav.handler && nav.handler(nav.id);
         });
     }
+
+    navTo(id: string): void {
+        this.setState({
+            selectedId: id
+        });
+    }
 }
     

@@ -8,6 +8,7 @@ import {NoteDetails} from "./components/NoteDetails";
 import {Navbar} from "./components/Navbar";
 
 class App extends Component {
+    private navRef: Navbar | undefined;
     private noteListRef: NoteList | undefined;
     private noteFormRef: NoteCreationForm | undefined;
     private noteDetailsRef: NoteDetails | undefined;
@@ -28,7 +29,7 @@ class App extends Component {
 
         this.refHandler = this.refHandler.bind(this);
         this.navTo = this.navTo.bind(this);
-        this.showNoteDetail = this.showNoteDetail.bind(this);
+        this.openNote = this.openNote.bind(this);
     }
 
     render() {
@@ -40,11 +41,12 @@ class App extends Component {
                         {id: this.NOTE_CREATE, caption: "Create Note", handler: (id: string) => this.navTo(id)},
                         {id: this.NOTE_DETAILS, caption: "Note Details", disabled: true, handler: (id: string) => this.navTo(id)},
                     ]}
+                    ref={(ref: Navbar) => this.navRef = ref}
                 />
                 <NoteList
                     id={this.NOTE_LIST}
                     visible={true}
-                    openNote={this.showNoteDetail}
+                    openNote={this.openNote}
                     ref = {(ref: NoteList) => { this.noteListRef = ref; this.refHandler(ref)}}
                 />
                 <NoteCreationForm
@@ -66,21 +68,22 @@ class App extends Component {
     }
 
     navTo(compId: string): void {
-        console.log(this.componentList);
         this.componentList.forEach((comp: BasicComponent) => {
             console.log("nav to: ", compId, comp.getId());
             comp.setVisible(comp.getId() === compId);
-        })
+        });
+        this.navRef && this.navRef.navTo(compId);
     }
 
-    showNoteDetail(note: Note, callback: booleanCallback): void {
+    openNote(note: Note, callback: booleanCallback): void {
         console.log("open note: ", note)
         this.navTo(this.NOTE_DETAILS);
-        // this.noteDetailsRef && this.noteDetailsRef.show(note, (detailVisible: boolean | undefined) => {
-        //     this.noteFormRef && this.noteFormRef.setVisible(!detailVisible);
-        //     callback(detailVisible);
-        //
-        // });
+
+        this.noteDetailsRef && this.noteDetailsRef.show(note, (detailVisible: boolean | undefined) => {
+            // this.noteFormRef && this.noteFormRef.setVisible(!detailVisible);
+            // callback(detailVisible);
+
+        });
     }
 }
 

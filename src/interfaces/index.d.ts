@@ -15,8 +15,8 @@ export interface BasicEntity {
     id?: number;
     name: string;
     description?: string;
-    updated?: Date;
-    created?: Date;
+    updated?: string;
+    created?: string;
     status?: STATUS;
 }
 

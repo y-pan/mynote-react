@@ -11,8 +11,8 @@ interface NoteFormProps {
 }
 
 interface NoteFormState {
-    newName?: string;
-    newDescription?: string;
+    name?: string;
+    description?: string;
     visible?: boolean;
 }
 
@@ -23,12 +23,13 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
 
     constructor(props: NoteFormProps) {
         super(props);
-        this.onCreate = this.onCreate.bind(this);
         this.state = {
-            newName: "",
-            newDescription: "",
+            name: "",
+            description: "",
             visible: this.props.visible
-        }
+        };
+        this.onCreate = this.onCreate.bind(this);
+        this.clear = this.clear.bind(this);
     }
 
     render() {
@@ -44,9 +45,9 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
                                 id="note-create-name"
                                 className="form-control"
                                 type="text"
-                                placeholder="New note name"
-                                value={this.state.newName}
-                                onChange={(event: any) => this.setState({newName: event.target.value})}
+                                placeholder="-- Name --"
+                                value={this.state.name}
+                                onChange={(event: any) => this.setState({name: event.target.value})}
                             />
                         </FieldDecorator>
                     </div>
@@ -55,9 +56,9 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
                             id="note-create-description"
                             className="form-control"
                             type="text"
-                            placeholder="New note description"
-                            value={this.state.newDescription}
-                            onChange={(event: any) => this.setState({newDescription: event.target.value})}
+                            placeholder="-- Description --"
+                            value={this.state.description}
+                            onChange={(event: any) => this.setState({description: event.target.value})}
                         />
                     </div>
                     <div className="col-sm">
@@ -95,18 +96,24 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
     }
 
     private onCreate(): void {
-        if (isEmpty(this.state.newName)) {
+        if (isEmpty(this.state.name)) {
             this.nameFieldRef && this.nameFieldRef.showError();
         } else {
-            createNote(this.state.newName, this.state.newDescription)
+            createNote(this.state.name, this.state.description)
                 .then((data: Note) => {
                     this.submitFieldRef && this.submitFieldRef.showOk();
+                    this.clear();
                     this.props.onCreatedCallback(data);
+
                 }).catch((err: any) => {
                 console.log(err);
                 this.submitFieldRef && this.submitFieldRef.showError();
             })
         }
+    }
+
+    clear(): void {
+        this.setState({name: "", description: ""});
     }
 
     getId(): string {

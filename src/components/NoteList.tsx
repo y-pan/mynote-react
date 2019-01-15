@@ -1,10 +1,11 @@
 import React from 'react';
-import ReactTable from "react-table";
+import ReactTable, {CellInfo} from "react-table";
 import "react-table/react-table.css";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faTrash, faLink} from '@fortawesome/free-solid-svg-icons'
 import {deleteNote, getNote, getNotes} from "../api/api";
 import {BasicComponent, booleanCallback, Note} from "../interfaces";
+import {DateComp} from "./DateComp";
 
 interface NoteListProps {
     id: string;
@@ -137,6 +138,22 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
                     Header: "Status",
                     id: "status",
                     accessor: d => d.status
+                }
+                ,{
+                    Header: "Created",
+                    id: "created",
+                    // accessor: d => d.created,
+                    Cell: (row: CellInfo) => {
+                        // console.log(row.original.created)
+                        return <DateComp date={row.original.created}/>;
+                    }
+                },{
+                    Header: "Updated",
+                    id: "updated",
+                    // accessor: d => d.updated
+                    Cell: (row: CellInfo) => {
+                        return <DateComp date={row.original.updated}/>;
+                    }
                 },
                 {
                     Header: "Action",

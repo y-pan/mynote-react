@@ -1,8 +1,7 @@
 import React from 'react';
 import {FieldDecorator} from "./FieldDecorator";
 import {isEmpty} from "../utils/Utils";
-import {createNote} from "../api/api";
-import {BasicComponent, booleanCallback, HasNavigateBackProvider, Item, Note} from "../interfaces";
+import {BasicComponent, booleanCallback, Item} from "../interfaces";
 
 interface ItemFormProps {
     id: string;
@@ -41,10 +40,10 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
                             ref={(ref: FieldDecorator) => this.nameFieldRef = ref}
                         >
                             <input
-                                id="note-create-name"
+                                id="item-create-name"
                                 className="form-control"
                                 type="text"
-                                placeholder="New note name"
+                                placeholder="New item name"
                                 value={this.state.name}
                                 onChange={(event: any) => this.setState({name: event.target.value})}
                             />
@@ -52,10 +51,10 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
                     </div>
                     <div className="col-sm">
                         <input
-                            id="note-create-description"
+                            id="item-create-description"
                             className="form-control"
                             type="text"
-                            placeholder="New note description"
+                            placeholder="New item description"
                             value={this.state.description}
                             onChange={(event: any) => this.setState({description: event.target.value})}
                         />
@@ -68,7 +67,7 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
                             ref={(ref: FieldDecorator) => this.submitFieldRef = ref}
                         >
                             <input
-                                id="note-create-sub"
+                                id="item-create-sub"
                                 className="form-control btn-primary"
                                 type="button"
                                 value={"Add Item"}
@@ -82,7 +81,7 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
     }
 
     setVisible(visible: boolean, callback?: booleanCallback): void {
-        console.log("Note Create Form visible to", visible)
+        console.log("Item Create Form visible to", visible)
         this.setState({
             visible: visible
         }, () => {
@@ -100,8 +99,8 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
         } else {
 
             console.log("create item...", this.state.name, this.state.description);
-            // createNote(this.state.name, this.state.description)
-            //     .then((data: Note) => {
+            // createItem(this.state.name, this.state.description)
+            //     .then((data: Item) => {
             //         this.submitFieldRef && this.submitFieldRef.showOk();
             //         this.props.onCreatedCallback(data);
             //     }).catch((err: any) => {
