@@ -6,6 +6,7 @@ import {spaceJoinIf} from "../tmp/Utils";
 export interface Nav {
     id: string;
     caption: string;
+    disabled?: boolean;
     handler(id: string): void;
 }
 
@@ -34,8 +35,12 @@ export class Navbar extends React.Component<NavbarProps, NavbarState> {
             return (
                 <li key={index} className={"nav-item"}>
                     <a
-                        className={spaceJoinIf("nav-link", "active", this.state.selectedId === nav.id)}
-                        onClick={(event: any) => this.onNavClicked(nav)}>
+                        className={spaceJoin("nav-link",
+                            this.state.selectedId === nav.id ? "active" : "",
+                            nav.disabled? "disabled" : "")}
+                        onClick={(event: any) => nav.disabled? null : this.onNavClicked(nav)}
+                        style={{cursor: "pointer", color: nav.disabled? "#CCCCCC" : "#000000", userSelect: "none"}}
+                    >
                         {nav.caption}
                     </a>
                 </li>

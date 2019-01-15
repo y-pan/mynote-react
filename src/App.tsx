@@ -38,7 +38,7 @@ class App extends Component {
                     navs={[
                         {id: this.NOTE_LIST, caption: "Note List", handler: (id: string) => this.navTo(id)},
                         {id: this.NOTE_CREATE, caption: "Create Note", handler: (id: string) => this.navTo(id)},
-                        {id: this.NOTE_DETAILS, caption: "Note Details", handler: (id: string) => this.navTo(id)},
+                        {id: this.NOTE_DETAILS, caption: "Note Details", disabled: true, handler: (id: string) => this.navTo(id)},
                     ]}
                 />
                 <NoteList
