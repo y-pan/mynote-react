@@ -4,6 +4,7 @@ import {BasicComponent, booleanCallback, HasNavigateBackProvider, Item, Note} fr
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import ReactTable, {CellInfo} from "react-table";
+import {ItemCreationForm} from "./ItemCreationForm";
 
 interface NoteDetailsProps {
     id: string;
@@ -108,6 +109,7 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
         return (
                 <div id={"note-detail"} style={{display: this.state.visible? "block" : "none"}}>
                     {this.renderNoteInfo(this.state.note)}
+                    <ItemCreationForm id={"item-create"} visible={true} onCreatedCallback={() => {}}/>
                     {table}
                 </div>
         );
