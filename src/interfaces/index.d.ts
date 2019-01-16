@@ -6,7 +6,14 @@ export enum STATUS {
 export interface HasId {
     id?: number;
 }
+export interface HasCompId {
+    compId: string;
+}
 
+export interface PromiseData<T extends HasId> {
+    data?: T;
+    error?: string;
+}
 export interface Note extends BasicEntity {
     items?: Item[];
 }
@@ -15,7 +22,7 @@ export interface Item extends BasicEntity{
 }
 
 export interface BasicEntity extends HasId {
-    name: string;
+    name?: string;
     description?: string;
     updated?: string;
     created?: string;

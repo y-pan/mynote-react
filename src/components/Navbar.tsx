@@ -1,12 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {spaceJoin} from "../utils/Utils";
-import {spaceJoinIf} from "../tmp/Utils";
+import {HasCompId} from "../interfaces";
 
-export interface Nav {
-    id: string;
+export interface Nav extends HasCompId {
     caption: string;
     disabled?: boolean;
+
     handler(id: string): void;
 }
 
@@ -24,7 +23,7 @@ export class Navbar extends React.Component<NavbarProps, NavbarState> {
         super(props);
 
         this.state = {
-            selectedId: this.props.navs[0].id
+            selectedId: this.props.navs[0].compId
         };
 
         this.onNavClicked = this.onNavClicked.bind(this);
@@ -36,10 +35,10 @@ export class Navbar extends React.Component<NavbarProps, NavbarState> {
                 <li key={index} className={"nav-item"}>
                     <a
                         className={spaceJoin("nav-link",
-                            this.state.selectedId === nav.id ? "active" : "",
-                            nav.disabled? "disabled" : "")}
-                        onClick={(event: any) => nav.disabled? null : this.onNavClicked(nav)}
-                        style={{cursor: "pointer", color: nav.disabled? "#CCCCCC" : "#000000", userSelect: "none"}}
+                            this.state.selectedId === nav.compId ? "active" : "",
+                            nav.disabled ? "disabled" : "")}
+                        onClick={(event: any) => nav.disabled ? null : this.onNavClicked(nav)}
+                        style={{cursor: "pointer", color: nav.disabled ? "#CCCCCC" : "#000000", userSelect: "none"}}
                     >
                         {nav.caption}
                     </a>
@@ -53,21 +52,21 @@ export class Navbar extends React.Component<NavbarProps, NavbarState> {
         );
     }
 
+    setSelected(id: string): void {
+        this.setState({
+            selectedId: id
+        });
+    }
+
     private onNavClicked(nav: Nav): void {
-        if (this.state.selectedId === nav.id) {
+        if (this.state.selectedId === nav.compId) {
             return;
         }
 
         this.setState({
-            selectedId: nav.id
+            selectedId: nav.compId
         }, () => {
-            nav.handler && nav.handler(nav.id);
-        });
-    }
-
-    navTo(id: string): void {
-        this.setState({
-            selectedId: id
+            nav.handler && nav.handler(nav.compId);
         });
     }
 }

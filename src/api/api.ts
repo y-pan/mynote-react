@@ -21,8 +21,6 @@ export function createNote(name?: string, description?: string): Promise<Note> {
 }
 export function createItem(noteId: number, name?: string, description?: string): Promise<Note> {
     let url: string = slashJoin(root, "items", "for-note", noteId);
-    console.log("noteid= ", noteId)
-    console.log("url: ", url)
     return ajaxPostTyped<Note>(url, {name: name || "", description: description || ""});
 }
 

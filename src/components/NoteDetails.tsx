@@ -1,19 +1,16 @@
 import React from 'react';
-import {FieldDecorator} from "./FieldDecorator";
-import {BasicComponent, booleanCallback, HasNavigateBackProvider, Item, Note} from "../interfaces";
+import {BasicComponent, booleanCallback, HasCompId, Item, Note, PromiseData} from "../interfaces";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import ReactTable, {CellInfo} from "react-table";
-import {ItemCreationForm} from "./ItemCreationForm";
-import {deleteItem, getNote} from "../api/api";
-import {deleteById, isNullOrUndefined} from "../utils/Utils";
-import {isEmptyNumber} from "../tmp/Utils";
+import {deleteItem, deleteNote, getNote} from "../api/api";
+import {deleteById} from "../utils/Utils";
 
-interface NoteDetailsProps {
-    id: string;
+interface NoteDetailsProps extends HasCompId {
     note?: Note;
-    onCreatedCallback: (note: Note) => void;
     visible: boolean;
+
+    openCreateItem(note: Note): void;
 }
 
 interface NoteDetailsState {
@@ -23,9 +20,6 @@ interface NoteDetailsState {
 
 export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsState> implements BasicComponent {
 
-    private nameFieldRef: FieldDecorator | undefined;
-    private submitFieldRef: FieldDecorator | undefined;
-
     constructor(props: NoteDetailsProps) {
         super(props);
         this.state = {
@@ -33,47 +27,30 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
             note: this.props.note
         };
 
-        this.show = this.show.bind(this);
-        this.refreshOnItemAdded = this.refreshOnItemAdded.bind(this);
+        this.update = this.update.bind(this);
+        this.updateOnItemAdded = this.updateOnItemAdded.bind(this);
         this.renderNoteInfo = this.renderNoteInfo.bind(this);
         this.onDeleteItem = this.onDeleteItem.bind(this);
     }
 
-    private renderNoteInfo(note?: Note): JSX.Element {
-
-        let info: JSX.Element = (
-            <div>
-                <div className="form-group row">
-                    <div className="col-sm-4">
-                        <input type="text" readOnly className="form-control" id="info-name"
-                               value={note && note.name || ""} />
-                    </div>
-                    <div className="col-sm-8">
-                        <textarea readOnly className="form-control" id="info-description"
-                                  value={note && note.description || ""} rows={1}/>
-                    </div>
-                </div>
-            </div>
-        );
-
-        return info;
-    }
     render() {
+        if (!this.state.note || this.state.note.id === undefined) {
+            return <span>Something went wrong :( </span>
+        }
+
         let table: JSX.Element = <ReactTable
             data={(this.state.note && this.state.note.items) || []}
             columns={[
                 {
                     Header: "Name",
                     id: "name",
-                    accessor: (d:Item) => d.name,
+                    accessor: (d: Item) => d.name,
                     Cell: (row: CellInfo) => (
                         <div>
                             <span
-                                style={{color: "red", cursor: "pointer", padding: 5}}
-                                // onClick={() => console.log(row.original.id)}
+                                style={{cursor: "pointer", fontWeight: "bold"}}
                             >
                                 {row.original.name}
-                                {/*<FontAwesomeIcon icon={faLink} />*/}
                             </span>
                         </div>
                     )
@@ -81,12 +58,12 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
                 {
                     Header: "Description",
                     id: "description",
-                    accessor: (d:Item) => d.description
+                    accessor: (d: Item) => d.description
                 },
                 {
                     Header: "Status",
                     id: "status",
-                    accessor: (d:Item) => d.status
+                    accessor: (d: Item) => d.status
                 },
                 {
                     Header: "Action",
@@ -95,103 +72,78 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
                         <div>
                             <span
                                 style={{color: "red", cursor: "pointer", padding: 5}}
-                                onClick={() => this.onDeleteItem(row.original.id)}
+                                onClick={() => this.onDeleteItem(row.original)}
                             >
-                                <FontAwesomeIcon icon={faTrash} />
+                                <FontAwesomeIcon icon={faTrash}/>
                             </span>
                         </div>
                     )
                 }
             ]}
-            defaultPageSize={5}
+            defaultPageSize={10}
             className="-striped -highlight"
         />;
 
         return (
-                <div id={"note-detail"} style={{display: this.state.visible? "block" : "none"}}>
-                    {this.renderNoteInfo(this.state.note)}
-                    <ItemCreationForm
-                        id={"item-create"}
-                        noteId={this.state.note? this.state.note.id : undefined}
-                        visible={true}
-                        onCreatedCallback={this.refreshOnItemAdded}
-                        ref={(ref: ItemCreationForm) => this.itemCreateRef = ref}
-                    />
-                    {table}
-                </div>
+            <div id={"note-detail"} style={{display: this.state.visible ? "block" : "none"}}>
+                {this.renderNoteInfo(this.state.note)}
+                {table}
+            </div>
         );
     }
 
-    private refreshOnItemAdded(item: Item, hardRefresh?: boolean): void {
-        if (!item || !this.state.note || !this.state.note.id) {
-            console.error("Incorrect state occurred.");
-            return;
-        }
-
-        if (hardRefresh) {
-            this.loadData();
-        } else {
-            let note: Note = this.state.note;
-            if(!note.items) {
-                note.items = [];
+    updateOnItemAdded(item: Item, hardRefresh?: boolean): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            if (!item || !this.state.note || !this.state.note.id) {
+                return reject({error: "Incorrect state occurred."});
             }
-            note.items.push(item);
-            this.setState({note: note});
-        }
-    }
 
-    private onDeleteItem(itemId: number, hardRefresh?: boolean): void {
-        if (!itemId) {
-            console.error("Invalid item id");
-            return;
-        }
-
-        deleteItem(itemId).then((itemIdDeleted: number) => {
-            this.refreshOnItemDeleted(itemIdDeleted, false);
-        })
-    }
-
-    private loadData(): void {
-        if (!this.state.note || this.state.note.id === undefined) {
-            console.error("Bad data state");
-            return;
-        }
-        getNote(this.state.note.id).then((note: Note) => {
-            this.setState({note: note})
-        }).catch((err: any) => {
-            console.error(err);
+            if (hardRefresh) {
+                return this.loadData();
+            } else {
+                let note: Note = this.state.note;
+                if (!note.items) {
+                    note.items = [];
+                }
+                note.items.push(item);
+                this.setState({note: note}, () => {
+                    return resolve({data: note});
+                });
+            }
         });
     }
 
-    refreshOnItemDeleted(deletedId: number | undefined, hardRefresh?: boolean): void {
-        if (!deletedId || !this.state.note) {
-            return;
-        }
-        if (hardRefresh) {
-            return this.loadData();
-        } else {
-            let note: Note = {...this.state.note};
-            let latestItems: Item[] = deleteById(note.items, deletedId) as Item[];
-            note.items = latestItems;
-            this.setState({note: note});
-        }
+    updateOnItemDeleted(deletedId: number | undefined, reload?: boolean): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            if (!deletedId || !this.state.note) {
+                return reject({error: "Bad data"});
+            }
+            if (reload) {
+                return this.loadData();
+            } else {
+                let note: Note = {...this.state.note};
+                let latestItems: Item[] = deleteById(note.items, deletedId) as Item[];
+                note.items = latestItems;
+                this.setState({note: note}, () => {
+                    return resolve({data: note});
+                });
+            }
+        });
     }
 
-
-    private itemCreateRef: ItemCreationForm | undefined;
-
-    public show(note: Note, callback: booleanCallback): void {
-        if (!note) {
-            return this.setState({visible: false, note: undefined}, () => {callback(this.state.visible)});
-        }
-
-        this.setState({visible: true, note: note}, () => {
-            callback(this.state.visible);
+    update(note: Note | undefined): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            if (!note) {
+                return reject("Bad data.");
+            }
+            return this.setState({note: note}, () => {
+                return resolve({data: note});
+            });
         });
     }
 
     getId(): string {
-        return this.props.id;
+        return this.props.compId;
     }
 
     getVisible(): boolean {
@@ -202,6 +154,60 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
         this.setState({visible: visible}, () => {
             callback && callback(this.state.visible);
         });
+    }
+
+    private renderNoteInfo(note?: Note): JSX.Element {
+
+        let info: JSX.Element = (
+            <div className="row">
+                <div className="col-sm-4">
+                    <input type="text" readOnly className="form-control" id="info-name"
+                           value={note && note.name || ""}/>
+                </div>
+                <div className="col-sm-6">
+                        <textarea readOnly className="form-control" id="info-description"
+                                  value={note && note.description || ""} rows={1}/>
+                </div>
+                <div className="col-sm-2">
+                    <input
+                        style={{fontSize: "1em"}}
+                        className={"form-control btn btn-success"}
+                        type={"button"}
+                        value={"Add"}
+                        onClick={() => this.state.note && this.props.openCreateItem(this.state.note)}
+                    />
+                </div>
+            </div>
+        );
+
+        return info;
+    }
+
+    private onDeleteItem(item: Item, reload?: boolean): void {
+        if (!item || !item.id) {
+            console.error("Invalid item");
+            return;
+        }
+
+        if (confirm("Delete item: " + item.name + " ?")) {
+            deleteItem(item.id as number).then((itemIdDeleted: number) => {
+                this.updateOnItemDeleted(itemIdDeleted, false);
+            });
+        }
+    }
+
+    private loadData(): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            if (!this.state.note || this.state.note.id === undefined) {
+                return reject({error: "Bad data state"});
+            }
+            return getNote(this.state.note.id).then((note: Note) => {
+                this.setState({note: note}, () => {
+                    return resolve({data: note});
+                })
+            })
+        });
+
     }
 }
     

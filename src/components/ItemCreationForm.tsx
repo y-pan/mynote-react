@@ -1,17 +1,16 @@
 import React from 'react';
 import {FieldDecorator} from "./FieldDecorator";
-import {isEmpty} from "../utils/Utils";
-import {BasicComponent, booleanCallback, Item} from "../interfaces";
+import {BasicComponent, booleanCallback, HasCompId, Item, Note, PromiseData} from "../interfaces";
 import {createItem} from "../api/api";
+import {isEmpty} from "../utils/Utils";
 
-interface ItemFormProps {
-    id: string;
-    noteId: number | undefined;
+interface ItemFormProps extends HasCompId {
     visible: boolean;
     onCreatedCallback: (item: Item) => void;
 }
 
 interface ItemFormState {
+    note?: Note;
     name?: string;
     description?: string;
     visible?: boolean;
@@ -36,8 +35,14 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
     }
 
     render() {
+        let noteInfoRow: JSX.Element | undefined = !this.state.note? undefined : (
+            <div className="row">
+                Note: {this.state.note.name} | {this.state.note.id}
+            </div>
+        );
         return (
             <div className="container" style={{display: this.state.visible ? "block" : "none"}}>
+                {noteInfoRow}
                 <div className="row">
                     <div className="col-sm">
                         <FieldDecorator
@@ -86,7 +91,6 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
     }
 
     setVisible(visible: boolean, callback?: booleanCallback): void {
-        console.log("Item Create Form visible to", visible)
         this.setState({
             visible: visible
         }, () => {
@@ -98,17 +102,27 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
         return this.state.visible || false;
     }
 
+    update(note: Note): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            this.setState({note: note}, () => {
+                resolve({data: note});
+            });
+        });
+    }
+
+    getId(): string {
+        return this.props.compId;
+    }
+
     private onCreate(): void {
-        if (isEmpty(this.state.name)) {
+        if (isEmpty(this.state.name) || !this.state.note || !this.state.note.id) {
             this.nameFieldRef && this.nameFieldRef.showError();
         } else {
-
-            console.log("create item...", this.props.noteId, this.state.name, this.state.description);
-            if (!this.props.noteId) {
-                console.error("Id invalid.")
+            if (!this.state.note) {
+                console.error("Id invalid.");
                 return;
             }
-            createItem(this.props.noteId, this.state.name, this.state.description)
+            createItem(this.state.note.id, this.state.name, this.state.description)
                 .then((data: Item) => {
                     this.submitFieldRef && this.submitFieldRef.showOk();
                     this.clear();
@@ -122,9 +136,6 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
 
     private clear(): void {
         this.setState({name: "", description: ""});
-    }
-    getId(): string {
-        return this.props.id;
     }
 }
     

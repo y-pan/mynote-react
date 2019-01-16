@@ -2,16 +2,16 @@ import React from 'react';
 import ReactTable, {CellInfo} from "react-table";
 import "react-table/react-table.css";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faTrash, faLink} from '@fortawesome/free-solid-svg-icons'
+import {faLink, faTrash} from '@fortawesome/free-solid-svg-icons'
 import {deleteNote, getNote, getNotes} from "../api/api";
-import {BasicComponent, booleanCallback, HasId, Note} from "../interfaces";
+import {BasicComponent, booleanCallback, HasCompId, Note, PromiseData} from "../interfaces";
 import {DateComp} from "./DateComp";
 import {deleteById} from "../utils/Utils";
+import {reject} from "q";
 
-interface NoteListProps {
-    id: string;
-    openNote(note: Note, noteOpenedCallback: booleanCallback): void;
+interface NoteListProps extends HasCompId {
     visible: boolean;
+    openNoteDetails(note: Note): void;
 }
 
 interface NoteListState {
@@ -39,50 +39,45 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
             callback && callback(this.state.visible);
         });
     }
+
     componentWillMount(): void {
         this.loadData();
     }
 
-    refreshOnNoteCreated(newNote: Note, hardRefresh?: boolean): void {
-        if (!newNote) {
-            return;
-        }
-        if (hardRefresh) {
-            return this.loadData();
-        } else {
-            let notes: Note[] = [...this.state.notes];
-            notes.push(newNote);
-            this.setState({notes: notes});
-        }
+    updateOnCreated(newNote: Note, reload?: boolean): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            if (!newNote) {
+                return reject({error: "Bad data."});
+            }
+
+            if (reload) {
+                return this.loadData();
+            } else {
+                let notes: Note[] = [...this.state.notes];
+                notes.push(newNote);
+                this.setState({notes: notes}, () => {
+                    resolve({data: newNote});
+                });
+            }
+        });
+
     }
 
-    refreshOnNoteDeleted(deletedId: number | undefined, hardRefresh?: boolean): void {
-        if (!deletedId) {
-            return;
-        }
-        if (hardRefresh) {
-            return this.loadData();
-        } else {
-            let notes: Note[] = deleteById(this.state.notes, deletedId) as Note[];
-            this.setState({notes: notes});
-        }
-    }
+    updateOnDeleted(deletedId: number | undefined, reload?: boolean): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            if (!deletedId) {
+                return reject({error: "Id is required."});
+            }
 
-
-    private loadData(): void {
-        getNotes()
-            .then((notes: Note[]) => {
-                this.setState({notes: notes})
-            })
-            .catch((err: any) => console.info(err));
-    }
-
-    private onOpenNoteDetails(noteId: number): void {
-        getNote(noteId).then((note: Note) => {
-            this.props.openNote(note, (otherVisible: boolean | undefined) => {
-                this.setState({visible: !otherVisible});
-            })
-        })
+            if (reload) {
+                return this.loadData();
+            } else {
+                let notes: Note[] = deleteById(this.state.notes, deletedId) as Note[];
+                this.setState({notes: notes}, () => {
+                    return resolve({data: undefined});
+                });
+            }
+        });
     }
 
     render() {
@@ -96,11 +91,11 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
                     Cell: row => (
                         <div>
                             <span
-                                style={{color: "red", cursor: "pointer", padding: 5}}
+                                style={{cursor: "pointer", fontWeight: "bold"}}
                                 onClick={() => this.onOpenNoteDetails(row.original.id)}
                             >
                                 {row.original.name}
-                                <FontAwesomeIcon icon={faLink} />
+                                <FontAwesomeIcon icon={faLink}/>
                             </span>
                         </div>
                     )
@@ -115,15 +110,14 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
                     id: "status",
                     accessor: d => d.status
                 }
-                ,{
+                , {
                     Header: "Created",
                     id: "created",
                     // accessor: d => d.created,
                     Cell: (row: CellInfo) => {
-                        // console.log(row.original.created)
                         return <DateComp date={row.original.created}/>;
                     }
-                },{
+                }, {
                     Header: "Updated",
                     id: "updated",
                     // accessor: d => d.updated
@@ -140,7 +134,7 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
                                 style={{color: "red", cursor: "pointer", padding: 5}}
                                 onClick={() => this.onDelete(row.original)}
                             >
-                                <FontAwesomeIcon icon={faTrash} />
+                                <FontAwesomeIcon icon={faTrash}/>
                             </span>
                         </div>
                     )
@@ -151,10 +145,34 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
         />;
 
         return (
-            <div id={"note-list"} style={{display: this.state.visible? "block" : "none"}}>
+            <div id={"note-list"} style={{display: this.state.visible ? "block" : "none"}}>
                 {table}
             </div>
         );
+    }
+
+    getId(): string {
+        return this.props.compId;
+    }
+
+    getVisible(): boolean {
+        return this.state.visible || false;
+    }
+
+    private loadData(): Promise<PromiseData<Note>> {
+        return new Promise((resolve, reject) => {
+            return getNotes().then((notes: Note[]) => {
+                this.setState({notes: notes}, () => {
+                    return resolve();
+                })
+            });
+        });
+    }
+
+    private onOpenNoteDetails(noteId: number): void {
+        getNote(noteId).then((note: Note) => {
+            this.props.openNoteDetails(note)
+        })
     }
 
     private onDelete(note: Note): void {
@@ -164,17 +182,9 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
         }
         if (confirm("Delete note: " + note.name + " ?")) {
             deleteNote(note.id as number).then(() => {
-                this.refreshOnNoteDeleted(note.id, false);
+                this.updateOnDeleted(note.id, false);
             });
         }
-    }
-
-    getId(): string {
-        return this.props.id;
-    }
-
-    getVisible(): boolean {
-        return this.state.visible || false;
     }
 
 }

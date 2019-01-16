@@ -2,10 +2,9 @@ import React from 'react';
 import {FieldDecorator} from "./FieldDecorator";
 import {isEmpty} from "../utils/Utils";
 import {createNote} from "../api/api";
-import {BasicComponent, booleanCallback, Note} from "../interfaces";
+import {BasicComponent, booleanCallback, HasCompId, Note} from "../interfaces";
 
-interface NoteFormProps {
-    id: string;
+interface NoteFormProps extends HasCompId {
     visible: boolean;
     onCreatedCallback: (note: Note) => void;
 }
@@ -75,7 +74,6 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
     }
 
     setVisible(visible: boolean, callback?: booleanCallback): void {
-        console.log("Note Create Form visible to", visible)
         this.setState({
             visible: visible
         }, () => {
@@ -85,6 +83,14 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
 
     getVisible(): boolean {
         return this.state.visible || false;
+    }
+
+    clear(): void {
+        this.setState({name: "", description: ""});
+    }
+
+    getId(): string {
+        return this.props.compId;
     }
 
     private onCreate(): void {
@@ -101,14 +107,6 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
                 this.submitFieldRef && this.submitFieldRef.showError();
             })
         }
-    }
-
-    clear(): void {
-        this.setState({name: "", description: ""});
-    }
-
-    getId(): string {
-        return this.props.id;
     }
 }
     
