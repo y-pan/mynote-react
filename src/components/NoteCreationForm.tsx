@@ -33,10 +33,12 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
     }
 
     render() {
+
         return (
-            <div className="container" style={{display: this.state.visible ? "block" : "none"}}>
-                <div className="row">
-                    <div className="col-sm">
+
+            <div style={{display: this.state.visible ? "block" : "none"}}>
+                <div className="form-group row">
+                    <div className="col-sm-4">
                         <FieldDecorator
                             errorMessageProvider={() => <span style={{color: "red"}}>* Name is required.</span>}
                             ref={(ref: FieldDecorator) => this.nameFieldRef = ref}
@@ -51,7 +53,7 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
                             />
                         </FieldDecorator>
                     </div>
-                    <div className="col-sm">
+                    <div className="col-sm-6">
                         <input
                             id="note-create-description"
                             className="form-control"
@@ -61,7 +63,7 @@ export class NoteCreationForm extends React.Component<NoteFormProps, NoteFormSta
                             onChange={(event: any) => this.setState({description: event.target.value})}
                         />
                     </div>
-                    <div className="col-sm">
+                    <div className="col-sm-2">
                         <FieldDecorator
                             errorMessageProvider={() => <span style={{color: "red"}}>Error</span>}
                             okMessageProvider={() => <span style={{color: "green"}}>OK</span>}

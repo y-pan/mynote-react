@@ -42,22 +42,18 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
     private renderNoteInfo(note?: Note): JSX.Element {
 
         let info: JSX.Element = (
-            <form>
+            <div>
                 <div className="form-group row">
-                    <label htmlFor="info-name" className="col-sm-2 col-form-label">Note Name:</label>
-                    <div className="col-sm-10">
+                    <div className="col-sm-4">
                         <input type="text" readOnly className="form-control" id="info-name"
                                value={note && note.name || ""} />
                     </div>
-                </div>
-                <div className="form-group row">
-                    <label htmlFor="info-description" className="col-sm-2 col-form-label">Note Description:</label>
-                    <div className="col-sm-10">
+                    <div className="col-sm-8">
                         <textarea readOnly className="form-control" id="info-description"
-                               value={note && note.description || ""} rows={1}/>
+                                  value={note && note.description || ""} rows={1}/>
                     </div>
                 </div>
-            </form>
+            </div>
         );
 
         return info;
