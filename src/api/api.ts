@@ -13,9 +13,17 @@ export function deleteNote(id: number): Promise<any> {
 export function getNotes(): Promise<Note[]> {
     return ajaxGet(slashJoin(root, "notes"));
 }
-export function getNote(noteId: number) {
+export function getNote(noteId: number): Promise<Note> {
     return ajaxGet(slashJoin(root, "notes", noteId));
 }
 export function createNote(name?: string, description?: string): Promise<Note> {
     return ajaxPostTyped<Note>(slashJoin(root, "notes"), {name: name || "", description: description || ""});
 }
+export function createItem(noteId: number, name?: string, description?: string): Promise<Note> {
+    let url: string = slashJoin(root, "items", "for-note", noteId);
+    console.log("noteid= ", noteId)
+    console.log("url: ", url)
+    return ajaxPostTyped<Note>(url, {name: name || "", description: description || ""});
+}
+
+

@@ -2,9 +2,11 @@ import React from 'react';
 import {FieldDecorator} from "./FieldDecorator";
 import {isEmpty} from "../utils/Utils";
 import {BasicComponent, booleanCallback, Item} from "../interfaces";
+import {createItem} from "../api/api";
 
 interface ItemFormProps {
     id: string;
+    noteId: number | undefined;
     visible: boolean;
     onCreatedCallback: (item: Item) => void;
 }
@@ -98,15 +100,19 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
             this.nameFieldRef && this.nameFieldRef.showError();
         } else {
 
-            console.log("create item...", this.state.name, this.state.description);
-            // createItem(this.state.name, this.state.description)
-            //     .then((data: Item) => {
-            //         this.submitFieldRef && this.submitFieldRef.showOk();
-            //         this.props.onCreatedCallback(data);
-            //     }).catch((err: any) => {
-            //     console.log(err);
-            //     this.submitFieldRef && this.submitFieldRef.showError();
-            // })
+            console.log("create item...", this.props.noteId, this.state.name, this.state.description);
+            if (!this.props.noteId) {
+                console.error("Id invalid.")
+                return;
+            }
+            createItem(this.props.noteId, this.state.name, this.state.description)
+                .then((data: Item) => {
+                    this.submitFieldRef && this.submitFieldRef.showOk();
+                    this.props.onCreatedCallback(data);
+                }).catch((err: any) => {
+                console.log(err);
+                this.submitFieldRef && this.submitFieldRef.showError();
+            })
         }
     }
 
