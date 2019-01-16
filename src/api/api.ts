@@ -2,7 +2,7 @@ import {ajaxDelete, ajaxGet, ajaxPost, ajaxPostTyped, slashJoin} from "../utils/
 import {Note} from "../interfaces";
 import {getApiRoot} from "../config/config";
 
-const root: string = getApiRoot("local");
+const root: string = getApiRoot();
 
 export function deleteItem(id: number): Promise<any> {
     return ajaxDelete(slashJoin(root, "items", id));
