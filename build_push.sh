@@ -12,7 +12,7 @@ docker rmi ${DOCKER_ACCOUNT}/${IMG}:${VERSION} -f
 echo "2/$total: docker build as: ${DOCKER_ACCOUNT}/${IMG}:${VERSION}"
 # ONLY 1 Dockerfile for client
 docker build -t ${DOCKER_ACCOUNT}/${IMG}:${VERSION} .
-exit
+
 echo "3/$total: docker push: ${DOCKER_ACCOUNT}/${IMG}:${VERSION}"
 docker push ${DOCKER_ACCOUNT}/${IMG}:${VERSION}
 
