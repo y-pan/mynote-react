@@ -53,7 +53,9 @@ class App extends Component {
                     id={this.NOTE_CREATE}
                     visible={false}
                     onCreatedCallback={(note: Note) => {
-                        this.noteListRef && this.noteListRef.refresh(note);
+                        this.noteListRef && this.noteListRef.refreshOnNoteCreated(note);
+                        this.noteDetailsRef && this.noteDetailsRef.show(note, () => null);
+                        this.navTo(this.NOTE_DETAILS);
                     }}
                     ref={(ref: NoteCreationForm) => {this.noteFormRef = ref; this.refHandler(ref)}}
                 />

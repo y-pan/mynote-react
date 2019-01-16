@@ -24,12 +24,15 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
 
     constructor(props: ItemFormProps) {
         super(props);
-        this.onCreate = this.onCreate.bind(this);
+
         this.state = {
             name: "",
             description: "",
             visible: this.props.visible
-        }
+        };
+
+        this.onCreate = this.onCreate.bind(this);
+        this.clear = this.clear.bind(this);
     }
 
     render() {
@@ -108,6 +111,7 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
             createItem(this.props.noteId, this.state.name, this.state.description)
                 .then((data: Item) => {
                     this.submitFieldRef && this.submitFieldRef.showOk();
+                    this.clear();
                     this.props.onCreatedCallback(data);
                 }).catch((err: any) => {
                 console.log(err);
@@ -116,6 +120,9 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
         }
     }
 
+    private clear(): void {
+        this.setState({name: "", description: ""});
+    }
     getId(): string {
         return this.props.id;
     }

@@ -1,3 +1,5 @@
+import {HasId, Note} from "../interfaces";
+
 export enum AjaxMethod {
     GET="GET", POST="POST", PUT="PUT", DELETE="DELETE"
 }
@@ -156,4 +158,16 @@ export function trimStringOrElseEmptyString(str: string): string {
 
 export function isNullOrUndefined(value: any): boolean {
     return value === undefined || value === null;
+}
+
+export function deleteById(array: HasId[] | undefined, id: number): HasId[] | undefined {
+    if (!id || !array) {
+        return array;
+    }
+    let arr: HasId[] = [...array];
+    let indexToDelete: number = arr.findIndex((item: HasId) => item.id === id);
+    if (indexToDelete !== -1) {
+        arr.splice(indexToDelete, 1);
+    }
+    return arr;
 }

@@ -4,8 +4,9 @@ import "react-table/react-table.css";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faTrash, faLink} from '@fortawesome/free-solid-svg-icons'
 import {deleteNote, getNote, getNotes} from "../api/api";
-import {BasicComponent, booleanCallback, Note} from "../interfaces";
+import {BasicComponent, booleanCallback, HasId, Note} from "../interfaces";
 import {DateComp} from "./DateComp";
+import {deleteById} from "../utils/Utils";
 
 interface NoteListProps {
     id: string;
@@ -42,8 +43,7 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
         this.loadData();
     }
 
-    refresh(newNote: Note, hardRefresh?: boolean): void {
-        // this.loadData();
+    refreshOnNoteCreated(newNote: Note, hardRefresh?: boolean): void {
         if (!newNote) {
             return;
         }
@@ -56,42 +56,18 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
         }
     }
 
-    refreshByAdd(newNote: Note, hardRefresh?: boolean): void {
-        // this.loadData();
-        if (!newNote) {
-            return;
-        }
-        if (hardRefresh) {
-            this.loadData();
-        } else {
-            let notes: Note[] = [...this.state.notes];
-            notes.push(newNote)
-            this.setState({notes: notes});
-        }
-    }
-
-    refreshByDelete(deletedId: number | undefined, hardRefresh?: boolean): void {
-        // this.loadData();
+    refreshOnNoteDeleted(deletedId: number | undefined, hardRefresh?: boolean): void {
         if (!deletedId) {
             return;
         }
         if (hardRefresh) {
             return this.loadData();
         } else {
-            let notes: Note[] = [...this.state.notes];
-            let indexToDelete: number = -1;
-            notes.forEach((note: Note, index: number) => {
-                if (note.id === deletedId) {
-                    indexToDelete = index;
-                    return;
-                }
-            });
-            if (indexToDelete !== -1) {
-                notes.splice(indexToDelete, 1);
-                this.setState({notes: notes});
-            }
+            let notes: Note[] = deleteById(this.state.notes, deletedId) as Note[];
+            this.setState({notes: notes});
         }
     }
+
 
     private loadData(): void {
         getNotes()
@@ -188,7 +164,7 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
         }
         if (confirm("Delete note: " + note.name + " ?")) {
             deleteNote(note.id as number).then(() => {
-                this.refreshByDelete(note.id, false);
+                this.refreshOnNoteDeleted(note.id, false);
             });
         }
     }

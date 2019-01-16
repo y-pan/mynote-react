@@ -3,6 +3,9 @@ export enum STATUS {
     PENDING="PENDING",
     COMPLETED="COMPLETED"
 }
+export interface HasId {
+    id?: number;
+}
 
 export interface Note extends BasicEntity {
     items?: Item[];
@@ -11,8 +14,7 @@ export interface Note extends BasicEntity {
 export interface Item extends BasicEntity{
 }
 
-export interface BasicEntity {
-    id?: number;
+export interface BasicEntity extends HasId {
     name: string;
     description?: string;
     updated?: string;

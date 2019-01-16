@@ -6,7 +6,7 @@ import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import ReactTable, {CellInfo} from "react-table";
 import {ItemCreationForm} from "./ItemCreationForm";
 import {deleteItem, getNote} from "../api/api";
-import {isNullOrUndefined} from "../utils/Utils";
+import {deleteById, isNullOrUndefined} from "../utils/Utils";
 import {isEmptyNumber} from "../tmp/Utils";
 
 interface NoteDetailsProps {
@@ -54,7 +54,7 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
                     <label htmlFor="info-description" className="col-sm-2 col-form-label">Note Description:</label>
                     <div className="col-sm-10">
                         <textarea readOnly className="form-control" id="info-description"
-                               value={note && note.description || ""} />
+                               value={note && note.description || ""} rows={1}/>
                     </div>
                 </div>
             </form>
@@ -134,14 +134,13 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
 
         if (hardRefresh) {
             this.loadData();
-
         } else {
             let note: Note = this.state.note;
             if(!note.items) {
                 note.items = [];
             }
             note.items.push(item);
-            this.setState({note: note})
+            this.setState({note: note});
         }
     }
 
@@ -175,20 +174,10 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
         if (hardRefresh) {
             return this.loadData();
         } else {
-            let note: Note = this.state.note;
-            let items: Item[] = note.items? [...note.items] : [];
-            let indexToDelete: number = -1;
-            items.forEach((item: Item, index: number) => {
-                if (item.id === deletedId) {
-                    indexToDelete = index;
-                    return;
-                }
-            });
-            if (indexToDelete !== -1) {
-                items.splice(indexToDelete, 1);
-                note.items = items;
-                this.setState({note: note});
-            }
+            let note: Note = {...this.state.note};
+            let latestItems: Item[] = deleteById(note.items, deletedId) as Item[];
+            note.items = latestItems;
+            this.setState({note: note});
         }
     }
 
