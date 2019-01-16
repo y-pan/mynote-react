@@ -146,7 +146,7 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
                     )
                 }
             ]}
-            defaultPageSize={5}
+            defaultPageSize={10}
             className="-striped -highlight"
         />;
 

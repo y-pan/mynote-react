@@ -26,11 +26,11 @@ export class FieldDecorator extends React.Component<FieldDecoratorProps, FieldDe
         return (
             <div>
                 {this.props.children}
-                <div style={{display: (this.state.showError? "block" : "none")}}>
-                    {this.props.errorMessageProvider && this.props.errorMessageProvider()}
+                <div style={{minHeight: 15, fontSize: "small"}}>
+                    {this.state.showError && this.props.errorMessageProvider && this.props.errorMessageProvider()}
                 </div>
-                <div style={{display: (this.state.showOk? "block" : "none")}}>
-                    {this.props.okMessageProvider && this.props.okMessageProvider()}
+                <div style={{minHeight: 15, fontSize: "small"}}>
+                    {this.state.showOk && this.props.okMessageProvider && this.props.okMessageProvider()}
                 </div>
             </div>
         );
