@@ -2,12 +2,12 @@ import React from 'react';
 import ReactTable, {CellInfo} from "react-table";
 import "react-table/react-table.css";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faLink, faTrash} from '@fortawesome/free-solid-svg-icons'
+import {faLink, faTrash, faList} from '@fortawesome/free-solid-svg-icons'
 import {deleteNote, getNote, getNotes} from "../api/api";
 import {BasicComponent, booleanCallback, HasCompId, Note, PromiseData} from "../interfaces";
 import {DateComp} from "./DateComp";
 import {deleteById} from "../utils/Utils";
-import {reject} from "q";
+import {DateTimeComp} from "./DateTimeComp";
 
 interface NoteListProps extends HasCompId {
     visible: boolean;
@@ -85,17 +85,16 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
             data={this.state.notes}
             columns={[
                 {
-                    Header: "Name",
+                    Header: () => <span><FontAwesomeIcon icon={faList} style={{marginRight: 5}}/> Name</span>,
                     id: "name",
                     accessor: d => d.name,
                     Cell: row => (
                         <div>
                             <span
-                                style={{cursor: "pointer", fontWeight: "bold"}}
+                                style={{cursor: "pointer", fontWeight: "bold", marginLeft: 10}}
                                 onClick={() => this.onOpenNoteDetails(row.original.id)}
                             >
                                 {row.original.name}
-                                <FontAwesomeIcon icon={faLink}/>
                             </span>
                         </div>
                     )
@@ -105,24 +104,25 @@ export class NoteList extends React.Component<NoteListProps, NoteListState> impl
                     id: "description",
                     accessor: d => d.description
                 },
+                // {
+                //     Header: "Status",
+                //     id: "status",
+                //     accessor: d => d.status,
+                // },
+                // {
+                //     Header: "Created",
+                //     id: "created",
+                //     // accessor: d => d.created,
+                //     Cell: (row: CellInfo) => {
+                //         return <DateComp date={row.original.created}/>;
+                //     }
+                // },
                 {
-                    Header: "Status",
-                    id: "status",
-                    accessor: d => d.status
-                }
-                , {
-                    Header: "Created",
-                    id: "created",
-                    // accessor: d => d.created,
-                    Cell: (row: CellInfo) => {
-                        return <DateComp date={row.original.created}/>;
-                    }
-                }, {
                     Header: "Updated",
                     id: "updated",
                     // accessor: d => d.updated
                     Cell: (row: CellInfo) => {
-                        return <DateComp date={row.original.updated}/>;
+                        return <DateTimeComp date={row.original.updated}/>;
                     }
                 },
                 {

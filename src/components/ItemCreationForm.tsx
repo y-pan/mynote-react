@@ -55,6 +55,8 @@ export class ItemCreationForm extends React.Component<ItemFormProps, ItemFormSta
                                 type="text"
                                 placeholder="New item name"
                                 value={this.state.name}
+                                autoFocus={true}
+                                tabIndex={0}
                                 onChange={(event: any) => this.setState({name: event.target.value})}
                             />
                         </FieldDecorator>

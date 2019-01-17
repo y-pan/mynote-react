@@ -12,7 +12,7 @@ interface AppProps {
 
 }
 interface AppState {
-    errorMessage: string;
+    // errorMessage: string;
 }
 
 class App extends Component<AppProps, AppState> {
@@ -36,7 +36,7 @@ class App extends Component<AppProps, AppState> {
         super(props);
 
         this.state = {
-            errorMessage: ""
+            // errorMessage: ""
         };
 
         this.refHandler = this.refHandler.bind(this);
@@ -104,12 +104,13 @@ class App extends Component<AppProps, AppState> {
                     }}
                     ref={(ref: NoteDetails) => {this.noteDetailsRef = ref; this.refHandler(ref)}}
                 />
-                <div style={{color: "red"}}>{this.state.errorMessage}</div>
+                <div style={{color: "red"}}></div>
             </div>
         );
     }
 
     showError(promiseData: PromiseData<HasId>): void {
+        console.log(promiseData)
         this.setState({errorMessage: promiseData.error || ""});
     }
 

@@ -35,7 +35,7 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
 
     render() {
         if (!this.state.note || this.state.note.id === undefined) {
-            return <span>Something went wrong :( </span>
+            return <span></span>;
         }
 
         let table: JSX.Element = <ReactTable
@@ -60,11 +60,11 @@ export class NoteDetails extends React.Component<NoteDetailsProps, NoteDetailsSt
                     id: "description",
                     accessor: (d: Item) => d.description
                 },
-                {
-                    Header: "Status",
-                    id: "status",
-                    accessor: (d: Item) => d.status
-                },
+                // {
+                //     Header: "Status",
+                //     id: "status",
+                //     accessor: (d: Item) => d.status
+                // },
                 {
                     Header: "Action",
                     id: "action",
